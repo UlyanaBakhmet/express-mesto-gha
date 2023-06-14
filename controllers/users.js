@@ -25,7 +25,7 @@ module.exports.getUserById = (req, res) => {
         res.status(badRequestError).send({ message: 'Указан некорректный ID' });
         return;
       }
-        if (err.name === 'NotFoundError') {
+      if (err.name === 'NotFoundError') {
         res.status(dataNotFoundError).send({ message: 'Пользователь с таким ID не найден' });
         return;
       }
