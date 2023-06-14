@@ -40,7 +40,7 @@ module.exports.deleteCard = (req, res) => {
         res.status(badRequestError).send({ message: 'При загрузке карточки произошла ошибка' });
         return;
       }
-        if (err.name === 'NotFoundError') {
+      if (err.name === 'NotFoundError') {
         res.status(dataNotFoundError).send({ message: 'Запрашиваемая карточка не найдена' });
         return;
       }
@@ -71,7 +71,7 @@ module.exports.addCardLike = (req, res) => {
 
       res.status(internalServerError).send({ message: notFoundMessage });
     });
-    };
+};
 
 module.exports.removeCardLike = (req, res) => {
   cardSchema
