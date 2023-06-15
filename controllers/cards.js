@@ -16,9 +16,8 @@ module.exports.getCards = (req, res) => {
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
-  const owner = req.user._id;
   cardSchema
-    .create({ name, link, owner })
+    .create({ name, link, owner: req.user._id })
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -33,13 +32,12 @@ module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
   cardSchema
     .findByIdAndDelete(cardId)
-    .orFail()
     .then((card) => res.status(200).send(card))
     .catch((err) => {
-      // if (err.name === 'CastError') {
-      //   res.status(badRequestError).send({ message: 'При загрузке карточки произошла ошибка' });
-      //   return;
-      // }
+      if (err.name === 'CastError') {
+        res.status(badRequestError).send({ message: 'При загрузке карточки произошла ошибка' });
+        return;
+      }
       if (err.name === 'NotFoundError') {
         res.status(dataNotFoundError).send({ message: 'Запрашиваемая карточка не найдена' });
         return;
@@ -73,7 +71,7 @@ module.exports.addCardLike = (req, res) => {
     });
 };
 
-module.exports.removeCardLike = (req, res) => {
+module.exports.deleteCardLike = (req, res) => {
   cardSchema
     .findByIdAndUpdate(
       req.params.cardId,
