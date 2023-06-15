@@ -34,7 +34,6 @@ module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
   cardSchema
     .findByIdAndDelete(cardId)
-    .orFail()
     .then((card) => res.status(200).send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
