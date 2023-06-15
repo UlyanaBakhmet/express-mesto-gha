@@ -30,29 +30,11 @@ module.exports.createCard = (req, res) => {
     });
 };
 
-// module.exports.deleteCard = (req, res) => {
-//   const { cardId } = req.params;
-//   Card
-//     .findByIdAndDelete(cardId)
-//     .orFail()
-//     .then((card) => res.status(200).send(card))
-//     .catch((err) => {
-//       if (err.name === 'CastError') {
-//         res.status(badRequestError).send({ message: 'При загрузке карточки произошла ошибка' });
-//         return;
-//       }
-//       if (err.name === 'NotFoundError') {
-//         res.status(dataNotFoundError).send({ message: 'Запрашиваемая карточка не найдена' });
-//         return;
-//       }
-
-//       res.status(internalServerError).send({ message: notFoundMessage });
-//     });
-// };
 module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
   Card
     .findByIdAndDelete(cardId)
+    .orFail()
     .then((card) => {
       if (!card) {
         return res.status(dataNotFoundError).send({ message: 'Запрашиваемая карточка не найдена' });

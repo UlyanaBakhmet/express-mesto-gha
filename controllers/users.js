@@ -14,29 +14,11 @@ module.exports.getUsers = (req, res) => {
     .catch(() => res.status(internalServerError).send({ message: notFoundMessage }));
 };
 
-// module.exports.getUserById = (req, res) => {
-//   const { userId } = req.params;
-//   User
-//     .findById(userId)
-//     .orFail()
-//     .then((user) => res.send(user))
-//     .catch((err) => {
-//       if (err.name === 'CastError') {
-//         res.status(badRequestError).send({ message: 'Указан некорректный ID' });
-//         return;
-//       }
-//       if (err.name === 'NotFoundError') {
-//         res.status(dataNotFoundError).send({ message: 'Пользователь с таким ID не найден' });
-//         return;
-//       }
-
-//       res.status(internalServerError).send({ message: notFoundMessage });
-//     });
-// };
 module.exports.getUserById = (req, res) => {
   const { userId } = req.params;
   User
     .findById(userId)
+    .orFail()
     .then((user) => {
       if (!user) {
         return res.status(dataNotFoundError).send({ message: 'Пользователь с таким ID не найден' });
