@@ -20,7 +20,7 @@ module.exports.createCard = (req, res) => {
 
   Card
     .create({ name, link, owner })
-    .then((card) => res.send(card))
+    .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(badRequestError).send({ message: 'При создании карточки произошла ошибка' });
