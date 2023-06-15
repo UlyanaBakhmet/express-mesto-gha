@@ -34,7 +34,6 @@ module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
   Card
     .findByIdAndDelete(cardId)
-    .orFail()
     .then((card) => {
       if (!card) {
         return res.status(dataNotFoundError).send({ message: 'Запрашиваемая карточка не найдена' });
