@@ -1,4 +1,4 @@
-const userSchema = require('../models/user');
+const User = require('../models/user');
 
 const {
   badRequestError,
@@ -8,35 +8,53 @@ const {
 } = require('../utils/constants');
 
 module.exports.getUsers = (req, res) => {
-  userSchema
+  User
     .find({})
     .then((users) => res.send(users))
     .catch(() => res.status(internalServerError).send({ message: notFoundMessage }));
 };
 
+// module.exports.getUserById = (req, res) => {
+//   const { userId } = req.params;
+//   User
+//     .findById(userId)
+//     .orFail()
+//     .then((user) => res.send(user))
+//     .catch((err) => {
+//       if (err.name === 'CastError') {
+//         res.status(badRequestError).send({ message: 'Указан некорректный ID' });
+//         return;
+//       }
+//       if (err.name === 'NotFoundError') {
+//         res.status(dataNotFoundError).send({ message: 'Пользователь с таким ID не найден' });
+//         return;
+//       }
+
+//       res.status(internalServerError).send({ message: notFoundMessage });
+//     });
+// };
 module.exports.getUserById = (req, res) => {
   const { userId } = req.params;
-  userSchema
+  User
     .findById(userId)
-    .orFail()
-    .then((user) => res.send(user))
+    .then((user) => {
+      if (!user) {
+        return res.status(dataNotFoundError).send({ message: 'Пользователь с таким ID не найден' });
+      }
+      return res.send(user);
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(badRequestError).send({ message: 'Указан некорректный ID' });
         return;
       }
-      if (err.name === 'NotFoundError') {
-        res.status(dataNotFoundError).send({ message: 'Пользователь с таким ID не найден' });
-        return;
-      }
-
       res.status(internalServerError).send({ message: notFoundMessage });
     });
 };
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
-  userSchema
+  User
     .create({ name, about, avatar })
     .then((user) => res.send(user))
     .catch((err) => {
@@ -51,7 +69,7 @@ module.exports.createUser = (req, res) => {
 
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
-  userSchema
+  User
     .findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => res.send(user))
     .catch((err) => {
@@ -66,7 +84,7 @@ module.exports.updateAvatar = (req, res) => {
 
 module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
-  userSchema
+  User
     .findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => res.send(user))
     .catch((err) => {
