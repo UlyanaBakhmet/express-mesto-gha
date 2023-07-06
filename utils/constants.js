@@ -1,11 +1,4 @@
-const badRequestError = 400;
-const dataNotFoundError = 404;
-const internalServerError = 500;
-const notFoundMessage = 'Ошибка на сервере';
 
-module.exports = {
-  badRequestError,
-  dataNotFoundError,
-  internalServerError,
-  notFoundMessage,
-};
+const urlRegex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
+
+module.exports = { urlRegex };

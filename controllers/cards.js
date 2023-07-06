@@ -1,20 +1,17 @@
 const Card = require('../models/card');
 
-const {
-  badRequestError,
-  dataNotFoundError,
-  internalServerError,
-  notFoundMessage,
-} = require('../utils/constants');
+const ValidationError = require('../errors/ValidationError');
+const ForbiddenError = require('../errors/ForbiddenError');
+const NotFoundError = require('../errors/NotFoundError');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card
     .find({})
     .then((cards) => res.send(cards))
-    .catch(() => res.status(internalServerError).send({ message: notFoundMessage }));
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res,next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
 
@@ -23,33 +20,39 @@ module.exports.createCard = (req, res) => {
     .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(badRequestError).send({ message: 'При создании карточки произошла ошибка' });
+        next(new ValidationError('При создании карточки произошла ошибка'));
       } else {
-        res.status(internalServerError).send({ message: notFoundMessage });
+        next(err);
       }
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
+
   Card
     .findByIdAndDelete(cardId)
     .then((card) => {
       if (!card) {
-        return res.status(dataNotFoundError).send({ message: 'Запрашиваемая карточка не найдена' });
+        throw new NotFoundError('Запрашиваемая карточка не найдена');
       }
-      return res.send(card);
+      if (card.owner.toString() !== req.user._id) {
+        throw new ForbiddenError('Нельзя удалить чужую карточку');
+      }
+      return Card.findByIdAndDelete(cardId);
     })
+
+    .then(() => res.send({ message: 'Карточка успешно удалена'}))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(badRequestError).send({ message: 'При загрузке карточки произошла ошибка' });
-        return;
+        next(new NotFoundError('При загрузке карточки произошла ошибка'));
       }
-      res.status(internalServerError).send({ message: notFoundMessage });
+
+      next(err);
     });
 };
 
-module.exports.addCardLike = (req, res) => {
+module.exports.addCardLike = (req, res, next) => {
   Card
     .findByIdAndUpdate(
       req.params.cardId,
@@ -58,22 +61,20 @@ module.exports.addCardLike = (req, res) => {
     )
     .then((card) => {
       if (!card) {
-        return res.status(dataNotFoundError).send({ message: 'Запрашиваемая карточка не найдена' });
+        throw new NotFoundError('Запрашиваемая карточка не найдена');
       }
-
-      return res.status(200).send(card);
+      return res.send({ message: 'Лайк успешно добавлен на карточку' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(badRequestError).send({ message: 'При добавлении лайка на карточу произошла ошибка' });
-        return;
+        next(new NotFoundError('При добавлении лайка на карточу произошла ошибка'));
       }
 
-      res.status(internalServerError).send({ message: notFoundMessage });
+      next(err);
     });
 };
 
-module.exports.deleteCardLike = (req, res) => {
+module.exports.deleteCardLike = (req, res, next) => {
   Card
     .findByIdAndUpdate(
       req.params.cardId,
@@ -82,17 +83,15 @@ module.exports.deleteCardLike = (req, res) => {
     )
     .then((card) => {
       if (!card) {
-        return res.status(dataNotFoundError).send({ message: 'Запрашиваемая карточка не найдена' });
+        throw new NotFoundError('Запрашиваемая карточка не найдена');
       }
-
-      return res.status(200).send(card);
+      return res.send({ message: 'Лайк с карточки успешно удалён' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(badRequestError).send({ message: 'При удалении лайка с карточки произошла ошибка' });
-        return;
+        return next(new NotFoundError('При удалении лайка с карточки произошла ошибка'));
       }
 
-      res.status(internalServerError).send({ message: notFoundMessage });
+      next(err);
     });
 };
