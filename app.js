@@ -18,9 +18,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(router);
-// обработчик ошибок celebrate
+
 app.use(errors());
-// централизованный обработчик ошибок
 app.use(handleErrors);
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb', { useNewUrlParser: true });
