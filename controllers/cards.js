@@ -17,13 +17,12 @@ module.exports.createCard = (req, res, next) => {
 
   Card
     .create({ name, link, owner })
-    .then((card) => res.send(card))
+    .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ValidationError('При создании карточки произошла ошибка'));
-      } else {
-        next(err);
+        return next(new ValidationError('При создании карточки произошла ошибка'));
       }
+      return next(err);
     });
 };
 
@@ -31,7 +30,7 @@ module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
 
   Card
-    .findByIdAndDelete(cardId)
+    .findById(cardId)
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Запрашиваемая карточка не найдена');
@@ -39,16 +38,16 @@ module.exports.deleteCard = (req, res, next) => {
       if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError('Нельзя удалить чужую карточку');
       }
-      return Card.findByIdAndDelete(cardId);
+      return Card.findByIdAndRemove(cardId);
     })
 
-    .then(() => res.send({ message: 'Карточка успешно удалена'}))
+    .then(() => res.send({ message: 'Карточка успешно удалена' }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new NotFoundError('При загрузке карточки произошла ошибка'));
+        return next(new NotFoundError('При загрузке карточки произошла ошибка'));
       }
 
-      next(err);
+      return next(err);
     });
 };
 
@@ -67,10 +66,10 @@ module.exports.addCardLike = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new NotFoundError('При добавлении лайка на карточу произошла ошибка'));
+        return next(new NotFoundError('При добавлении лайка на карточу произошла ошибка'));
       }
 
-      next(err);
+      return next(err);
     });
 };
 
@@ -92,6 +91,6 @@ module.exports.deleteCardLike = (req, res, next) => {
         return next(new NotFoundError('При удалении лайка с карточки произошла ошибка'));
       }
 
-      next(err);
+      return next(err);
     });
 };

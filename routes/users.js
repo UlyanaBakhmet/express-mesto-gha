@@ -11,14 +11,14 @@ const {
   updateUser,
 } = require('../controllers/users');
 
-
 router.get('/', getUsers);
 
 router.get('/me', getUser);
 
 router.get('/:userId', celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().required().alphanum().hex().length(24),
+    userId: Joi.string().required().alphanum().hex()
+      .length(24),
   }),
 }), getUserById);
 

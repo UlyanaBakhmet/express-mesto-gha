@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
       default:
-        "https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png",
+        'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
       validate: [isURL, 'Некорректный URL'],
     },
 
@@ -54,15 +54,14 @@ userSchema.statics.findUserByCredentials = function (email, password) {
       }
 
       return bcrypt.compare(password, user.password)
-      .then((matched) => {
-        if (!matched) {
-          return Promise.reject(new AuthError('Неправильные почта или пароль'));
-        }
+        .then((matched) => {
+          if (!matched) {
+            return Promise.reject(new AuthError('Неправильные почта или пароль'));
+          }
 
-        return user;
-      });
+          return user;
+        });
     });
 };
 
 module.exports = mongoose.model('User', userSchema);
-

@@ -51,32 +51,31 @@ module.exports.createUser = (req, res, next) => {
       password: hash,
     }))
     .then(() => {
-      res.send(new User({
+      res.status(201).send(new User({
         name, about, avatar, email,
       }));
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-         next(new ValidationError('Предоставлены некорректные данные'));
+        return next(new ValidationError('Предоставлены некорректные данные'));
       }
-        if (err.code === 11000) {
-          next(new ConflictError('Пользователь с таким email уже существует'));
+      if (err.code === 11000) {
+        return next(new ConflictError('Пользователь с таким email уже существует'));
       }
-        next(err);
+      return next(err);
     });
 };
 
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User
-  .findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-  .then((user) => res.send(new User({ name: user.name, about: user.about, avatar })))
-  .catch((err) => {
+    .findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
+    .then((user) => res.send(new User({ name: user.name, about: user.about, avatar })))
+    .catch((err) => {
       if (err.name === 'ValidationError') {
         return next(new ValidationError('Предоставлены некорректные данные'));
       }
-
-      next(err);
+      return next(err);
     });
 };
 
@@ -85,12 +84,12 @@ module.exports.updateUser = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .then((user) => res.send(new User({ name, about, avatar: user.avatar })))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-      return next(new ValidationError('Предоставлены некорректные данные'));
+        return next(new ValidationError('Предоставлены некорректные данные'));
       }
       return next(err);
     });
@@ -102,15 +101,15 @@ module.exports.login = (req, res, next) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, 'someUniqueSecretKey', {
-        expiresIn: "7d",
+        expiresIn: '7d',
       });
       res
-        .cookie("jwt", token, {
+        .cookie('jwt', token, {
           maxAge: 3600000 * 24 * 7,
           httpOnly: true,
           sameSite: true,
         })
-        .send({ message: "Авторизация прошла успешно" });
+        .send({ message: 'Авторизация прошла успешно' });
     })
 
     .catch(next);
